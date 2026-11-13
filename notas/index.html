@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consolidado de notas — Coevaluación</title>
+<style>
+  :root{--verde:#1B5E3F;--verde2:#2E7D53;--verde-soft:#E7F1EB;--verde-line:#B7D3C2;
+    --oro:#C8992E;--txt:#28332D;--muted:#5B6A62;--bg:#F4F6F5;--danger:#B23A3A;
+    --shadow:0 1px 3px rgba(27,94,63,.08),0 6px 20px rgba(27,94,63,.07);}
+  *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);line-height:1.5}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px 64px}
+  header{background:linear-gradient(135deg,var(--verde),var(--verde2));color:#fff;padding:20px 0;margin-bottom:22px;box-shadow:var(--shadow)}
+  header .wrap{padding-bottom:0}
+  header .k{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+  header h1{margin:4px 0 2px;font-size:20px}
+  header .sub{font-size:13px;opacity:.9}
+  .card{background:#fff;border:1px solid var(--verde-line);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+  h2{font-size:17px;color:var(--verde);margin:0 0 4px} .lead{color:var(--muted);font-size:14px;margin:0 0 14px}
+  .btn{display:inline-flex;gap:8px;align-items:center;background:var(--verde);color:#fff;border:none;padding:10px 16px;
+    border-radius:10px;font-size:14.5px;font-weight:600;cursor:pointer} .btn:hover{background:var(--verde2)}
+  .btn.gold{background:var(--oro)} .btn.sec{background:#fff;color:var(--verde);border:1.5px solid var(--verde-line)}
+  .btn:disabled{background:#c3cdc7;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .drop{border:2px dashed var(--verde-line);border-radius:12px;padding:26px;text-align:center;color:var(--muted);
+    background:var(--verde-soft);cursor:pointer;transition:.15s} .drop.hover{border-color:var(--verde2);background:#dbece2}
+  table{width:100%;border-collapse:collapse;font-size:13.5px} th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #eef2ef}
+  th{background:var(--verde);color:#fff;font-size:12.5px;position:sticky;top:0} tr:nth-child(even) td{background:#f8faf9}
+  td.num,th.num{text-align:center;font-variant-numeric:tabular-nums} .tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .t-ok{background:var(--verde-soft);color:var(--verde)} .t-no{background:#F6E1E1;color:var(--danger)} .t-part{background:#F3E7D6;color:#8a6417}
+  .grade{font-weight:800;color:var(--verde);font-size:15px} .grade.low{color:var(--danger)}
+  .scroll{overflow:auto;max-height:560px;border:1px solid var(--verde-line);border-radius:10px}
+  .stat{display:flex;gap:18px;flex-wrap:wrap;margin:4px 0 2px}
+  .stat .b{background:var(--verde-soft);border:1px solid var(--verde-line);border-radius:10px;padding:10px 16px;min-width:120px}
+  .stat .b .n{font-size:22px;font-weight:800;color:var(--verde)} .stat .b .l{font-size:12px;color:var(--muted)}
+  .muted{color:var(--muted);font-size:13px} .foot{font-size:11.5px;color:#8a968f;text-align:center;margin-top:24px;line-height:1.6}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{padding:8px 14px;border-radius:999px;border:1.5px solid var(--verde-line);background:#fff;color:var(--verde);
+    cursor:pointer;font-size:13.5px;font-weight:600} .tab.active{background:var(--verde);color:#fff;border-color:var(--verde)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="k">Universidad de Antioquia · Facultad de Ciencias Agrarias — Vista del docente</div>
+  <h1>Consolidado de notas — Coevaluación de pódcast</h1>
+  <div class="sub" id="sub">Cargando…</div>
+</div></header>
+
+<div class="wrap">
+  <div class="card">
+    <h2>1. Cargar comprobantes de los estudiantes</h2>
+    <p class="lead">Arrastra aquí todos los archivos <code>comprobante_*.json</code> que te enviaron los
+       estudiantes (puedes seleccionar varios a la vez). Se procesan en tu navegador; nada se sube a internet.</p>
+    <div class="drop" id="drop">
+      <div style="font-size:30px">⬇</div>
+      <div><b>Suelta los archivos aquí</b> o haz clic para seleccionarlos</div>
+      <div class="muted" style="margin-top:4px">Archivos .json · puedes cargar en varias tandas</div>
+    </div>
+    <input type="file" id="file" accept=".json,application/json" multiple class="hidden">
+    <div class="row" style="margin-top:14px">
+      <button class="btn sec" id="btnLimpiar">Limpiar todo</button>
+      <span class="muted" id="loadMsg"></span>
+    </div>
+  </div>
+
+  <div class="card" id="panel">
+    <div class="stat">
+      <div class="b"><div class="n" id="stEnt">0</div><div class="l">Comprobantes cargados</div></div>
+      <div class="b"><div class="n" id="stComp">0</div><div class="l">Completaron (5/5)</div></div>
+      <div class="b"><div class="n" id="stFalt">0</div><div class="l">Sin entregar</div></div>
+      <div class="b"><div class="n" id="stTot">22</div><div class="l">Total del curso</div></div>
+    </div>
+    <div style="height:14px"></div>
+    <div class="tabs">
+      <button class="tab active" data-t="part">Notas de participación (2,5 %)</button>
+      <button class="tab" data-t="grupo">Coevaluación recibida por grupo</button>
+      <button class="tab" data-t="falta">Pendientes de entregar</button>
+    </div>
+
+    <!-- Participación -->
+    <div id="tab-part">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">Nota de cada estudiante</h2>
+        <button class="btn gold" id="btnCsvPart">⬇ Exportar notas_participacion.csv</button>
+      </div>
+      <p class="muted" style="margin-top:0">Regla: <b>5,0</b> si completó las 5 coevaluaciones; proporcional si entregó menos; en blanco si no entregó.</p>
+      <div class="scroll"><table id="tblPart"></table></div>
+    </div>
+
+    <!-- Por grupo -->
+    <div id="tab-grupo" class="hidden">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">Promedio recibido por cada pódcast</h2>
+        <button class="btn gold" id="btnCsvGrupo">⬇ Exportar coevaluacion_por_grupo.csv</button>
+      </div>
+      <p class="muted" style="margin-top:0">Promedio de los puntajes que los compañeros asignaron a cada grupo (sobre 100). Útil para informar la nota del pódcast (5 %).</p>
+      <div class="scroll"><table id="tblGrupo"></table></div>
+    </div>
+
+    <!-- Pendientes -->
+    <div id="tab-falta" class="hidden">
+      <h2>Estudiantes que aún no entregan</h2>
+      <div class="scroll"><table id="tblFalta"></table></div>
+    </div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="../datos.js"></script>
+<script>
+const $=s=>document.querySelector(s), D=window.DATOS;
+const byCed={}; D.estudiantes.forEach(e=>byCed[e.cedula]=e);
+const grupoById=id=>D.grupos.find(g=>g.id===id);
+const nGruposACoevaluar = D.grupos.length-1;   // cada estudiante evalúa todos menos el suyo
+let ENTRIES={};  // cedula -> comprobante
+
+$("#sub").textContent = D.curso+" ("+D.codigo+") · "+D.estudiantes.length+" estudiantes · 6 grupos";
+$("#stTot").textContent = D.estudiantes.length;
+$("#foot").innerHTML="Coordinación General de Prácticas · FCA, Universidad de Antioquia. "
+ +"Guarda los CSV exportados en esta carpeta <code>notas/</code>.";
+
+/* ---- carga de archivos ---- */
+const drop=$("#drop"), fileInput=$("#file");
+drop.addEventListener("click",()=>fileInput.click());
+["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("hover");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("hover");}));
+drop.addEventListener("drop",e=>handleFiles(e.dataTransfer.files));
+fileInput.addEventListener("change",e=>handleFiles(e.target.files));
+$("#btnLimpiar").addEventListener("click",()=>{ENTRIES={};render();$("#loadMsg").textContent="";});
+
+function handleFiles(files){
+  let ok=0,bad=0,dup=0;
+  const arr=[...files].filter(f=>/\.json$/i.test(f.name));
+  let pend=arr.length; if(!pend){$("#loadMsg").textContent="No había archivos .json.";return;}
+  arr.forEach(f=>{
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        const c=JSON.parse(r.result);
+        if(c.actividad!=="coevaluacion_podcast"||!c.cedula||!byCed[c.cedula]){ bad++; }
+        else { if(ENTRIES[c.cedula]) dup++; ENTRIES[c.cedula]=c; ok++; }
+      }catch(e){ bad++; }
+      if(--pend===0){ render();
+        $("#loadMsg").textContent=`Cargados: ${ok}. ${dup?("Reemplazados: "+dup+". "):""}${bad?("Ignorados (no válidos): "+bad+"."):""}`;
+      }
+    };
+    r.readAsText(f);
+  });
+}
+
+/* ---- cálculo ---- */
+function notaDe(c){
+  const n = c.completados!=null ? c.completados : (c.evaluaciones||[]).filter(e=>e.total>0).length;
+  return n>=nGruposACoevaluar ? 5.0 : Math.round(5.0*n/nGruposACoevaluar*10)/10;
+}
+
+/* ---- render ---- */
+function render(){
+  const list=Object.values(ENTRIES);
+  $("#stEnt").textContent=list.length;
+  $("#stComp").textContent=list.filter(c=>notaDe(c)>=5).length;
+  $("#stFalt").textContent=D.estudiantes.length-list.length;
+
+  // Participación
+  let h="<tr><th>#</th><th>Cédula</th><th>Estudiante</th><th>Grupo</th><th class='num'>Coev. (de "+nGruposACoevaluar+")</th><th class='num'>Nota (0–5)</th><th>Estado</th></tr>";
+  D.estudiantes.forEach((e,i)=>{
+    const c=ENTRIES[e.cedula];
+    if(c){ const n=c.completados!=null?c.completados:(c.evaluaciones||[]).filter(x=>x.total>0).length;
+      const nota=notaDe(c);
+      const tag = nota>=5? "<span class='tag t-ok'>Completo</span>" : "<span class='tag t-part'>Parcial</span>";
+      h+=`<tr><td class='num'>${i+1}</td><td>${e.cedula}</td><td>${e.nombre}</td>
+        <td>${grupoById(e.grupo).nombre}</td><td class='num'>${n}</td>
+        <td class='num'><span class='grade ${nota<5?'low':''}'>${nota.toFixed(1)}</span></td><td>${tag}</td></tr>`;
+    } else {
+      h+=`<tr><td class='num'>${i+1}</td><td>${e.cedula}</td><td>${e.nombre}</td>
+        <td>${grupoById(e.grupo).nombre}</td><td class='num'>—</td>
+        <td class='num'><span class='muted'>—</span></td><td><span class='tag t-no'>Sin entregar</span></td></tr>`;
+    }
+  });
+  $("#tblPart").innerHTML=h;
+
+  // Por grupo (promedios recibidos)
+  const acc={}; D.grupos.forEach(g=>acc[g.id]={n:0,total:0,crit:{}});
+  D.rubrica.forEach(c=>D.grupos.forEach(g=>acc[g.id].crit[c.id]=0));
+  list.forEach(c=>(c.evaluaciones||[]).forEach(ev=>{
+    if(!acc[ev.grupo]||!(ev.total>0))return;
+    acc[ev.grupo].n++; acc[ev.grupo].total+=ev.total;
+    D.rubrica.forEach(cr=>acc[ev.grupo].crit[cr.id]+= (ev.puntajes&&ev.puntajes[cr.id])||0);
+  }));
+  let hg="<tr><th>Grupo</th><th>Tema</th><th class='num'>n</th>"+
+    D.rubrica.map(c=>`<th class='num' title='${c.nombre}'>${c.nombre.split(' ')[0]} /${c.max}</th>`).join("")+
+    "<th class='num'>Total /100</th></tr>";
+  D.grupos.forEach(g=>{
+    const a=acc[g.id]; const n=a.n;
+    const prom = n? (a.total/n):0;
+    hg+=`<tr><td><b>${g.nombre}</b></td><td class='muted'>${g.tema}</td><td class='num'>${n}</td>`+
+      D.rubrica.map(c=>`<td class='num'>${n?(a.crit[c.id]/n).toFixed(1):'—'}</td>`).join("")+
+      `<td class='num'><span class='grade'>${n?prom.toFixed(1):'—'}</span></td></tr>`;
+  });
+  $("#tblGrupo").innerHTML=hg;
+
+  // Pendientes
+  let hf="<tr><th>Cédula</th><th>Estudiante</th><th>Correo</th><th>Grupo</th></tr>";
+  const faltan=D.estudiantes.filter(e=>!ENTRIES[e.cedula]);
+  if(!faltan.length) hf+="<tr><td colspan='4' class='num' style='color:var(--verde);font-weight:700'>✓ Todos entregaron</td></tr>";
+  faltan.forEach(e=>{ const c=(e.nombre.toLowerCase().replace(/[^a-z]/g,''))+"@udea.edu.co";
+    hf+=`<tr><td>${e.cedula}</td><td>${e.nombre}</td><td class='muted'>—</td><td>${grupoById(e.grupo).nombre}</td></tr>`; });
+  $("#tblFalta").innerHTML=hf;
+}
+
+/* ---- tabs ---- */
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active")); t.classList.add("active");
+  ["part","grupo","falta"].forEach(k=>$("#tab-"+k).classList.toggle("hidden",k!==t.dataset.t));
+}));
+
+/* ---- exportar CSV ---- */
+function csv(rows){ return rows.map(r=>r.map(v=>{
+  v=(v==null?"":String(v)); return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(";")).join("\n"); }
+function download(name,text){ const b=new Blob(["﻿"+text],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); }
+
+$("#btnCsvPart").addEventListener("click",()=>{
+  const rows=[["Cedula","Estudiante","Grupo","Coevaluaciones_completadas","Total_requerido","Nota_2.5pct_(0-5)","Estado"]];
+  D.estudiantes.forEach(e=>{ const c=ENTRIES[e.cedula];
+    if(c){ const n=c.completados!=null?c.completados:(c.evaluaciones||[]).filter(x=>x.total>0).length;
+      const nota=notaDe(c);
+      rows.push([e.cedula,e.nombre,grupoById(e.grupo).nombre,n,nGruposACoevaluar,nota.toFixed(1),nota>=5?"Completo":"Parcial"]); }
+    else rows.push([e.cedula,e.nombre,grupoById(e.grupo).nombre,0,nGruposACoevaluar,"","Sin entregar"]);
+  });
+  download("notas_participacion.csv",csv(rows));
+});
+$("#btnCsvGrupo").addEventListener("click",()=>{
+  const acc={}; D.grupos.forEach(g=>acc[g.id]={n:0,total:0,crit:{}});
+  D.rubrica.forEach(c=>D.grupos.forEach(g=>acc[g.id].crit[c.id]=0));
+  Object.values(ENTRIES).forEach(c=>(c.evaluaciones||[]).forEach(ev=>{
+    if(!acc[ev.grupo]||!(ev.total>0))return; acc[ev.grupo].n++; acc[ev.grupo].total+=ev.total;
+    D.rubrica.forEach(cr=>acc[ev.grupo].crit[cr.id]+=(ev.puntajes&&ev.puntajes[cr.id])||0); }));
+  const head=["Grupo","Tema","Evaluaciones_recibidas",...D.rubrica.map(c=>c.nombre+" (/"+c.max+")"),"Total (/100)"];
+  const rows=[head];
+  D.grupos.forEach(g=>{ const a=acc[g.id],n=a.n;
+    rows.push([g.nombre,g.tema,n,...D.rubrica.map(c=>n?(a.crit[c.id]/n).toFixed(2):""),n?(a.total/n).toFixed(2):""]); });
+  download("coevaluacion_por_grupo.csv",csv(rows));
+});
+
+render();
+</script>
+</body>
+</html>
