@@ -1,5 +1,7 @@
 # Coevaluación de pódcast — Revisión crítica de artículo científico
 
+https://josefernandoguarin.github.io/Coevaluaci-nPodcast/
+
 Aplicativo web **estático** (sin servidor) para que los estudiantes del curso
 **Sistemas de producción bovina especializada en leche (5007583)** realicen la
 **coevaluación** de los pódcast de sus compañeros, usando la rúbrica de la actividad.
