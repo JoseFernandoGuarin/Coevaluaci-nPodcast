@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coevaluación de pódcast</title>
+<style>
+  :root{
+    --verde:#1B5E3F; --verde2:#2E7D53; --verde-soft:#E7F1EB; --verde-line:#B7D3C2;
+    --oro:#C8992E; --txt:#28332D; --muted:#5B6A62; --bg:#F4F6F5; --card:#ffffff;
+    --danger:#B23A3A; --radius:14px;
+    --shadow:0 1px 3px rgba(27,94,63,.08),0 6px 20px rgba(27,94,63,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--verde2)}
+  .wrap{max-width:860px;margin:0 auto;padding:0 16px 64px}
+  /* Header */
+  header{background:linear-gradient(135deg,var(--verde) 0%,var(--verde2) 100%);color:#fff;
+    padding:20px 0 18px;margin-bottom:22px;box-shadow:var(--shadow)}
+  header .wrap{padding-top:0;padding-bottom:0}
+  header .k{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+  header h1{margin:4px 0 2px;font-size:20px;font-weight:700}
+  header .sub{font-size:13px;opacity:.9}
+  .pill{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
+    padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;margin-top:8px}
+  /* Cards */
+  .card{background:var(--card);border:1px solid var(--verde-line);border-radius:var(--radius);
+    padding:18px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+  h2{font-size:17px;margin:0 0 4px;color:var(--verde)}
+  .lead{color:var(--muted);font-size:14px;margin:0 0 14px}
+  label{font-weight:600;font-size:13px;display:block;margin-bottom:6px}
+  select,input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--verde-line);
+    border-radius:10px;font-size:15px;background:#fff;color:var(--txt)}
+  select:focus,input:focus{outline:2px solid var(--verde2);border-color:var(--verde2)}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--verde);color:#fff;border:none;
+    padding:11px 18px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:.15s}
+  .btn:hover{background:var(--verde2)}
+  .btn:disabled{background:#c3cdc7;cursor:not-allowed}
+  .btn.sec{background:#fff;color:var(--verde);border:1.5px solid var(--verde-line)}
+  .btn.sec:hover{background:var(--verde-soft)}
+  .btn.gold{background:var(--oro)} .btn.gold:hover{filter:brightness(1.05)}
+  .btn.block{width:100%;justify-content:center}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .hidden{display:none !important}
+  /* Material list */
+  .mat{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid var(--verde-line);
+    border-radius:12px;margin-bottom:10px;background:#fff;cursor:pointer;transition:.15s}
+  .mat:hover{border-color:var(--verde2);box-shadow:var(--shadow)}
+  .mat .num{flex:0 0 42px;height:42px;border-radius:50%;background:var(--verde-soft);color:var(--verde);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+  .mat .info{flex:1 1 auto;min-width:0}
+  .mat .info .t{font-weight:600;font-size:15px}
+  .mat .info .d{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+  .state{flex:0 0 auto;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;white-space:nowrap}
+  .s-pend{background:#F3E7D6;color:#8a6417}
+  .s-list{background:#DDE9F5;color:#2a567f}
+  .s-done{background:var(--verde-soft);color:var(--verde)}
+  /* Progress strip */
+  .track{height:10px;background:#e3e9e5;border-radius:999px;overflow:hidden}
+  .track>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--verde2),var(--verde));
+    transition:width .2s}
+  .counter{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+  /* Player */
+  .player{background:var(--verde-soft);border:1px solid var(--verde-line);border-radius:12px;padding:16px}
+  .ptop{display:flex;align-items:center;gap:14px}
+  .play{flex:0 0 56px;width:56px;height:56px;border-radius:50%;background:var(--verde);color:#fff;border:none;
+    font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .play:hover{background:var(--verde2)}
+  .ptimes{flex:1 1 auto}
+  .ptrack{height:12px;background:#d4e2d9;border-radius:999px;overflow:hidden;cursor:not-allowed}
+  .ptrack>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--verde2),var(--verde))}
+  .ptime{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;
+    font-variant-numeric:tabular-nums}
+  .note{font-size:12px;color:var(--muted);margin-top:10px;display:flex;gap:7px;align-items:flex-start}
+  .note b{color:var(--txt)}
+  /* Rubric */
+  .lockbar{display:flex;align-items:center;gap:10px;background:#fff;border:1px dashed var(--verde-line);
+    border-radius:10px;padding:12px 14px;font-size:13.5px;color:var(--muted)}
+  .crit{padding:14px 0;border-bottom:1px solid #eef2ef}
+  .crit:last-child{border-bottom:none}
+  .crit .ch{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .crit .cn{font-weight:600;font-size:14.5px}
+  .crit .cd{font-size:12.5px;color:var(--muted);margin:2px 0 10px}
+  .crit .val{font-weight:700;color:var(--verde);font-variant-numeric:tabular-nums;font-size:15px;white-space:nowrap}
+  input[type=range]{width:100%;accent-color:var(--verde2);height:26px}
+  .scalelbl{display:flex;justify-content:space-between;font-size:11px;color:#8a968f;margin-top:-2px}
+  textarea{width:100%;padding:10px 12px;border:1px solid var(--verde-line);border-radius:10px;
+    font-family:inherit;font-size:14px;resize:vertical;min-height:62px}
+  .totalbox{display:flex;justify-content:space-between;align-items:center;background:var(--verde);color:#fff;
+    padding:12px 16px;border-radius:10px;margin-top:4px;font-weight:700}
+  .totalbox .n{font-size:20px}
+  .badge-self{background:#efe3c7;color:#7a5c12;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .muted{color:var(--muted);font-size:13px}
+  .ok{color:var(--verde);font-weight:700}
+  .warn{background:#FBF0E4;border:1px solid #E8D4B4;color:#7a5c12;padding:10px 12px;border-radius:10px;font-size:13px}
+  .done-hero{text-align:center;padding:10px 0 4px}
+  .done-hero .big{font-size:46px;font-weight:800;color:var(--verde);line-height:1}
+  .foot{font-size:11.5px;color:#8a968f;text-align:center;margin-top:26px;line-height:1.6}
+  iframe.guion{width:100%;height:520px;border:1px solid var(--verde-line);border-radius:10px;margin-top:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="k">Universidad de Antioquia · Facultad de Ciencias Agrarias</div>
+    <h1 id="hTitulo">Coevaluación de pódcast</h1>
+    <div class="sub" id="hSub">Sistemas de producción bovina especializada en leche</div>
+    <span class="pill" id="hPill">Vale 2,5 % de la nota</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ====== PASO 1: Identificación ====== -->
+  <section id="viewLogin" class="card">
+    <h2>Identifícate para comenzar</h2>
+    <p class="lead">Selecciona tu nombre de la lista del curso. Tu avance queda guardado en este
+       navegador, así que puedes continuar después sin perder lo hecho.</p>
+    <label for="selEst">Estudiante</label>
+    <select id="selEst"><option value="">— Selecciona tu nombre —</option></select>
+    <div style="height:14px"></div>
+    <button class="btn block" id="btnEntrar" disabled>Entrar</button>
+  </section>
+
+  <!-- ====== PASO 2: Panel ====== -->
+  <section id="viewPanel" class="hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div>
+          <h2 style="margin-bottom:2px" id="pHola">Hola</h2>
+          <div class="muted" id="pGrupo"></div>
+        </div>
+        <button class="btn sec" id="btnSalir">Cambiar de usuario</button>
+      </div>
+      <div style="height:14px"></div>
+      <div class="track"><i id="pbar"></i></div>
+      <div class="counter" id="pcount"></div>
+    </div>
+
+    <div class="card">
+      <h2>Materiales por coevaluar</h2>
+      <p class="lead">Debes escuchar y evaluar los <b>5 pódcast de los demás grupos</b>. El pódcast de
+         tu propio grupo no se evalúa. Para obtener la nota máxima (5,0) tienes que completar los 5.</p>
+      <div id="matList"></div>
+    </div>
+
+    <div class="card" id="finalCard">
+      <div id="finalPending">
+        <div class="warn">Aún te faltan coevaluaciones por completar. Cuando termines las 5 podrás
+           generar tu comprobante aquí.</div>
+      </div>
+      <div id="finalReady" class="hidden">
+        <div class="done-hero">
+          <div class="big">5,0</div>
+          <p class="muted" style="margin:6px 0 0">¡Completaste las 5 coevaluaciones! Esta es tu nota de
+             participación en la actividad (2,5 % del curso).</p>
+        </div>
+        <div style="height:14px"></div>
+        <p class="lead">Genera tu <b>comprobante</b> y envíalo a tu profesor por el medio que él indique
+           (plataforma del curso o correo). El comprobante es la prueba de que completaste la coevaluación.</p>
+        <button class="btn gold block" id="btnComprobante">⬇ Descargar mi comprobante</button>
+        <div id="compHint" class="muted" style="text-align:center;margin-top:10px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== PASO 3: Material (player + rúbrica) ====== -->
+  <section id="viewMat" class="hidden">
+    <button class="btn sec" id="btnVolver" style="margin-bottom:14px">← Volver a mis materiales</button>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <div><h2 id="mTitulo"></h2><div class="muted" id="mTema"></div></div>
+      </div>
+      <div id="mArticulo" class="muted" style="margin-top:8px;font-size:13px"></div>
+
+      <div style="height:16px"></div>
+      <div class="player">
+        <div class="ptop">
+          <button class="play" id="btnPlay" aria-label="Reproducir">▶</button>
+          <div class="ptimes">
+            <div class="ptrack"><i id="ptrackbar"></i></div>
+            <div class="ptime"><span id="tCur">0:00</span><span id="tDur">--:--</span></div>
+          </div>
+        </div>
+        <div class="note">🔒 <span><b>No se puede adelantar el audio.</b> Debes escucharlo completo;
+          al terminar se habilitará la evaluación. Puedes pausar y retroceder, pero no saltar hacia adelante.</span></div>
+      </div>
+
+      <div style="height:14px"></div>
+      <button class="btn sec" id="btnGuion">📄 Ver el guion del grupo</button>
+      <div id="guionWrap" class="hidden"></div>
+    </div>
+
+    <div class="card">
+      <h2>Evaluación con la rúbrica</h2>
+      <div id="lockMsg" class="lockbar">
+        <span>🔒</span>
+        <span>La evaluación se habilita cuando termines de escuchar el pódcast
+          (<b><span id="lockPct">0</span>%</b> escuchado).</span>
+      </div>
+      <div id="rubForm" class="hidden">
+        <p class="lead">Asigna un puntaje a cada criterio moviendo el control. El total se calcula solo.</p>
+        <div id="crits"></div>
+        <div style="height:6px"></div>
+        <label for="coment">Comentario para el grupo (opcional)</label>
+        <textarea id="coment" placeholder="Una observación breve que le sirva al grupo para mejorar…"></textarea>
+        <div style="height:14px"></div>
+        <div class="totalbox"><span>Total de esta coevaluación</span><span class="n"><span id="totNum">0</span> / 100</span></div>
+        <div style="height:14px"></div>
+        <button class="btn block" id="btnGuardar">Guardar coevaluación</button>
+        <div id="savedMsg" class="ok hidden" style="text-align:center;margin-top:10px">✓ Coevaluación guardada</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot" id="footer"></div>
+</div>
+
+<script src="datos.js"></script>
+<script>
+/* ---------- utilidades ---------- */
+const $ = s => document.querySelector(s);
+const D = window.DATOS;
+const LSKEY = c => "coeval_5007583_" + c;
+const grupoById = id => D.grupos.find(g => g.id === id);
+function fmt(t){ if(!isFinite(t)) return "--:--"; t=Math.max(0,Math.floor(t));
+  const m=Math.floor(t/60), s=t%60; return m+":"+String(s).padStart(2,"0"); }
+function round1(x){ return Math.round(x*10)/10; }
+
+let EST = null;          // estudiante actual
+let STATE = null;        // estado persistido
+let CUR = null;          // material abierto {grupo, audio, maxPlayed...}
+
+/* ---------- persistencia ---------- */
+function load(ced){
+  try{ const raw = localStorage.getItem(LSKEY(ced)); if(raw) return JSON.parse(raw); }catch(e){}
+  return { cedula:ced, materiales:{} };
+}
+function save(){ try{ localStorage.setItem(LSKEY(EST.cedula), JSON.stringify(STATE)); }catch(e){} }
+
+/* ---------- lista de materiales a evaluar (todos menos su grupo) ---------- */
+function materialesDe(est){ return D.grupos.filter(g => g.id !== est.grupo); }
+function completados(){ const ms=materialesDe(EST);
+  return ms.filter(g => STATE.materiales[g.id] && STATE.materiales[g.id].evaluado).length; }
+
+/* ============ LOGIN ============ */
+(function initLogin(){
+  const sel = $("#selEst");
+  [...D.estudiantes].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'))
+    .forEach(e=>{ const o=document.createElement("option"); o.value=e.cedula; o.textContent=e.nombre; sel.appendChild(o); });
+  sel.addEventListener("change", ()=>{ $("#btnEntrar").disabled = !sel.value; });
+  $("#btnEntrar").addEventListener("click", ()=>{
+    EST = D.estudiantes.find(e=>e.cedula === sel.value); if(!EST) return;
+    STATE = load(EST.cedula); save(); openPanel();
+  });
+  // encabezado
+  $("#hSub").textContent = D.curso;
+  $("#hPill").textContent = "Vale " + D.valor;
+  $("#footer").innerHTML = "Coordinación General de Prácticas · Facultad de Ciencias Agrarias, "
+    + "Universidad de Antioquia.<br>Curso " + D.curso + " (" + D.codigo + ").";
+})();
+
+/* ============ PANEL ============ */
+function show(view){ ["viewLogin","viewPanel","viewMat"].forEach(v=>$("#"+v).classList.add("hidden"));
+  $("#"+view).classList.remove("hidden"); window.scrollTo(0,0); }
+
+function openPanel(){
+  const miGrupo = grupoById(EST.grupo);
+  $("#pHola").textContent = "Hola, " + EST.nombre.split(" ")[0] + " " + (EST.nombre.split(" ")[1]||"");
+  $("#pGrupo").innerHTML = "Tu grupo: <b>"+miGrupo.nombre+"</b> — "+miGrupo.tema+
+    " <span class='muted'>(no evalúas tu propio pódcast)</span>";
+  renderMatList();
+  renderProgress();
+  show("viewPanel");
+}
+
+function renderProgress(){
+  const total = materialesDe(EST).length, hechos = completados();
+  $("#pbar").style.width = (hechos/total*100)+"%";
+  $("#pcount").textContent = hechos+" de "+total+" coevaluaciones completadas";
+  const ready = hechos === total;
+  $("#finalPending").classList.toggle("hidden", ready);
+  $("#finalReady").classList.toggle("hidden", !ready);
+}
+
+function renderMatList(){
+  const list = $("#matList"); list.innerHTML = "";
+  materialesDe(EST).forEach((g,i)=>{
+    const st = STATE.materiales[g.id] || {};
+    let cls="s-pend", txt="Pendiente";
+    if(st.evaluado){ cls="s-done"; txt="✓ Evaluado"; }
+    else if(st.escuchado){ cls="s-list"; txt="Escuchado"; }
+    const div = document.createElement("div");
+    div.className="mat";
+    div.innerHTML = `<div class="num">${i+1}</div>
+      <div class="info"><div class="t">${g.nombre} — ${g.tema}</div>
+      <div class="d">${g.integrantes.join(" · ")}</div></div>
+      <div class="state ${cls}">${txt}</div>`;
+    div.addEventListener("click", ()=>openMaterial(g.id));
+    list.appendChild(div);
+  });
+}
+
+$("#btnSalir").addEventListener("click", ()=>{ EST=null; STATE=null; $("#selEst").value=""; $("#btnEntrar").disabled=true; show("viewLogin"); });
+
+/* ============ MATERIAL (player + rúbrica) ============ */
+function openMaterial(gid){
+  const g = grupoById(gid);
+  const st = STATE.materiales[gid] || (STATE.materiales[gid]={escuchado:false,maxPlayed:0,evaluado:false});
+  $("#mTitulo").textContent = g.nombre;
+  $("#mTema").textContent = g.tema;
+  $("#mArticulo").innerHTML = (g.articulo? "<b>Artículo:</b> "+g.articulo : "") ;
+  $("#mArticulo").style.display = g.articulo ? "block":"none";
+
+  // guion
+  $("#guionWrap").classList.add("hidden"); $("#guionWrap").innerHTML="";
+  $("#btnGuion").onclick = ()=>{
+    const w=$("#guionWrap");
+    if(w.classList.contains("hidden")){
+      w.innerHTML = `<iframe class="guion" src="${g.guion}#view=FitH" title="Guion"></iframe>
+        <p class="muted" style="margin-top:6px">Si el guion no carga aquí,
+        <a href="${g.guion}" target="_blank" rel="noopener">ábrelo en otra pestaña</a>.</p>`;
+      w.classList.remove("hidden"); $("#btnGuion").textContent="📄 Ocultar el guion";
+    } else { w.classList.add("hidden"); w.innerHTML=""; $("#btnGuion").textContent="📄 Ver el guion del grupo"; }
+  };
+
+  // ---- audio ----
+  const audio = new Audio(g.podcast);
+  audio.preload = "metadata";
+  let maxPlayed = st.maxPlayed || 0;
+  let completo = !!st.escuchado;
+  CUR = { gid, g, audio, get maxPlayed(){return maxPlayed}, set maxPlayed(v){maxPlayed=v} };
+  window.CUR = CUR;
+
+  const btnPlay=$("#btnPlay"), bar=$("#ptrackbar"), tCur=$("#tCur"), tDur=$("#tDur");
+  btnPlay.textContent="▶";
+  bar.style.width = "0%"; tCur.textContent="0:00"; tDur.textContent="--:--";
+
+  function refreshLock(pct){
+    $("#lockPct").textContent = Math.floor(pct);
+    if(completo){
+      $("#lockMsg").classList.add("hidden");
+      $("#rubForm").classList.remove("hidden");
+    }
+  }
+  function markListened(){
+    if(completo) return;
+    completo=true; st.escuchado=true; st.maxPlayed=maxPlayed; save();
+    $("#lockMsg").classList.add("hidden"); $("#rubForm").classList.remove("hidden");
+    renderMatList();
+  }
+
+  audio.addEventListener("loadedmetadata", ()=>{
+    tDur.textContent = fmt(audio.duration);
+    if(completo){ bar.style.width="100%"; tCur.textContent=fmt(audio.duration); }
+    else if(maxPlayed>0){ bar.style.width=(maxPlayed/audio.duration*100)+"%"; tCur.textContent=fmt(maxPlayed); }
+    refreshLock(completo?100:(audio.duration?maxPlayed/audio.duration*100:0));
+  });
+
+  // anti-avance: si intentan saltar hacia adelante, se regresa al máximo escuchado
+  audio.addEventListener("seeking", ()=>{
+    if(audio.currentTime > maxPlayed + 0.6){ audio.currentTime = maxPlayed; }
+  });
+  audio.addEventListener("timeupdate", ()=>{
+    if(audio.currentTime > maxPlayed + 0.6){ audio.currentTime = maxPlayed; return; }
+    if(audio.currentTime > maxPlayed) maxPlayed = audio.currentTime;
+    st.maxPlayed = maxPlayed;
+    const pct = audio.duration ? maxPlayed/audio.duration*100 : 0;
+    if(!completo){ bar.style.width = pct+"%"; tCur.textContent = fmt(maxPlayed); }
+    refreshLock(pct);
+    if(audio.duration && maxPlayed >= audio.duration - 1.5) markListened();
+  });
+  audio.addEventListener("ended", ()=>{ maxPlayed=audio.duration; markListened();
+    bar.style.width="100%"; tCur.textContent=fmt(audio.duration); btnPlay.textContent="▶"; });
+
+  btnPlay.onclick = ()=>{ if(audio.paused){ audio.play(); btnPlay.textContent="⏸"; }
+    else { audio.pause(); btnPlay.textContent="▶"; } };
+
+  // ---- rúbrica ----
+  buildRubric(gid, st);
+  // estado inicial de lock
+  if(completo){ $("#lockMsg").classList.add("hidden"); $("#rubForm").classList.remove("hidden"); }
+  else { $("#lockMsg").classList.remove("hidden"); $("#rubForm").classList.add("hidden"); }
+  $("#savedMsg").classList.add("hidden");
+
+  show("viewMat");
+}
+
+function buildRubric(gid, st){
+  const box=$("#crits"); box.innerHTML="";
+  const prev = st.puntajes || {};
+  D.rubrica.forEach(c=>{
+    const v = (prev[c.id]!=null)? prev[c.id] : Math.round(c.max*0.7);
+    const el=document.createElement("div"); el.className="crit";
+    el.innerHTML = `<div class="ch"><span class="cn">${c.nombre}</span>
+        <span class="val"><span id="v_${c.id}">${v}</span> / ${c.max}</span></div>
+      <div class="cd">${c.desc}</div>
+      <input type="range" min="0" max="${c.max}" step="1" value="${v}" id="r_${c.id}">
+      <div class="scalelbl"><span>0</span><span>${c.max}</span></div>`;
+    box.appendChild(el);
+    el.querySelector("input").addEventListener("input", e=>{
+      $("#v_"+c.id).textContent = e.target.value; recalcTotal();
+    });
+  });
+  $("#coment").value = st.comentario || "";
+  recalcTotal();
+  $("#btnGuardar").onclick = ()=>guardar(gid);
+}
+function recalcTotal(){
+  let t=0; D.rubrica.forEach(c=>{ t+= +(($("#r_"+c.id)||{}).value||0); });
+  $("#totNum").textContent = t; return t;
+}
+function guardar(gid){
+  const st = STATE.materiales[gid];
+  if(!st || !st.escuchado){ alert("Primero debes escuchar el pódcast completo."); return; }
+  const puntajes={}; let total=0;
+  D.rubrica.forEach(c=>{ const v=+$("#r_"+c.id).value; puntajes[c.id]=v; total+=v; });
+  st.puntajes=puntajes; st.total=total; st.comentario=$("#coment").value.trim();
+  st.evaluado=true; st.ts=new Date().toISOString();
+  save(); renderMatList(); renderProgress();
+  $("#savedMsg").classList.remove("hidden");
+  setTimeout(()=>{ if(CUR&&CUR.audio){CUR.audio.pause();} show("viewPanel"); }, 700);
+}
+
+$("#btnVolver").addEventListener("click", ()=>{ if(CUR&&CUR.audio) CUR.audio.pause(); show("viewPanel"); });
+
+/* ============ COMPROBANTE ============ */
+function hash(str){ let h=5381; for(let i=0;i<str.length;i++){ h=((h<<5)+h)+str.charCodeAt(i); h=h&0xffffffff; }
+  return ("0000000"+(h>>>0).toString(16)).slice(-8); }
+
+$("#btnComprobante").addEventListener("click", ()=>{
+  const ms = materialesDe(EST);
+  const evals = ms.map(g=>{
+    const st=STATE.materiales[g.id]||{};
+    return { grupo:g.id, grupoNombre:g.nombre, total:st.total||0,
+             puntajes:st.puntajes||{}, comentario:st.comentario||"", ts:st.ts||"" };
+  });
+  const comp = {
+    actividad:"coevaluacion_podcast", curso:D.codigo,
+    cedula:EST.cedula, nombre:EST.nombre, grupo:EST.grupo,
+    completados:completados(), totalRequerido:ms.length,
+    nota: completados()===ms.length ? 5.0 : round1(5.0*completados()/ms.length),
+    generado: new Date().toISOString(),
+    evaluaciones: evals
+  };
+  comp.firma = hash(JSON.stringify(comp));
+  const blob=new Blob([JSON.stringify(comp,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  const ape = EST.nombre.split(" ")[0].replace(/[^A-Za-z]/g,"");
+  a.href=URL.createObjectURL(blob);
+  a.download="comprobante_"+ape+"_"+EST.cedula+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  $("#compHint").textContent = "Archivo generado: "+a.download+" — envíalo a tu profesor.";
+});
+</script>
+</body>
+</html>
